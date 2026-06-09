@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagrama de Componentes</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+    <div class="toolbar">
+        <button onclick="app.addElement('component')">▢ Componente</button>
+        <button onclick="app.addElement('service')" style="background:#3b82f6;"> Servicio</button>
+        <button onclick="app.addElement('database')" style="background:#10b981;">🗄 BD</button>
+        <button onclick="app.addElement('frontend')" style="background:#ec4899;"> Frontend</button>
+        <div class="sep"></div>
+        <select id="lineType">
+            <option value="solid">→ Sólida</option>
+            <option value="dashed">→ Discontinua</option>
+            <option value="dotted">→ Punteada</option>
+        </select>
+        <div class="sep"></div>
+        <button onclick="app.copySelected()">📋 Copiar</button>
+        <button onclick="app.pasteSelected()">📄 Pegar</button>
+        <button onclick="app.deleteSelected()" style="background:#ef4444;">🗑️ Eliminar</button>
+        <button onclick="app.reverseConn()" style="background:#8b5cf6;">🔁 Revertir Flujo</button>
+        <div class="sep"></div>
+        <button onclick="app.bringToFront()" style="background:#1e293b;border:1px solid #475569;">⬆ Al Frente</button>
+        <button onclick="app.sendToBack()" style="background:#1e293b;border:1px solid #475569;">⬇ Al Fondo</button>
+        <div class="sep"></div>
+        <button onclick="app.autoLayout()" style="background:#10b981;">⊞ Auto Layout</button>
+        <div class="sep"></div>
+        <button onclick="app.exportAsImage()" style="background:#6366f1;">🖼 Exportar PNG</button>
+        <input id="zoomDisplay" type="text" value="100%" style="color:white;font-size:13px;font-weight:600;width:52px;text-align:center;background:#475569;border:none;border-radius:4px;padding:4px;" onchange="app.applyZoomInput(this)" onkeydown="if(event.key==='Enter') this.blur()" ondblclick="app.resetZoom()">
+        <div class="sep"></div>
+        <button onclick="app.saveDiagram()" style="background:#6366f1;">💾 Guardar</button>
+        <button onclick="app.loadDiagram()">📂 Cargar</button>
+        <input type="file" id="fileInput" style="display:none" accept=".json" onchange="app.loadFromFile(this)">
+    </div>
+
+    <div class="sidebar">
+        <h3>Componentes</h3>
+        <div class="shape-palette">
+            <div class="shape-btn" onclick="app.addElement('component')">
+                <div class="icon" style="color:#8b5cf6;">▢</div>Componente
+            </div>
+            <div class="shape-btn" onclick="app.addElement('service')">
+                <div class="icon" style="color:#3b82f6;">⚙</div>Servicio
+            </div>
+            <div class="shape-btn" onclick="app.addElement('frontend')">
+                <div class="icon" style="color:#ec4899;">🖥</div>Frontend
+            </div>
+            <div class="shape-btn" onclick="app.addElement('database')">
+                <div class="icon" style="color:#10b981;">🗄</div>Base Datos
+            </div>
+            <div class="shape-btn" onclick="app.addElement('queue')">
+                <div class="icon" style="color:#f59e0b;">☰</div>Cola / Queue
+            </div>
+        </div>
+
+        <h3>Instrucciones</h3>
+        <div class="instrucciones">
+            <p><strong>🖱 Arrastrar:</strong> Mover componentes</p>
+            <p><strong>🔗 Conectar:</strong> Arrastrar punto azul a otro</p>
+            <p><strong>✏️ Doble clic:</strong> Editar nombre / descripción</p>
+            <p><strong>◢ Esquinas:</strong> Redimensionar</p>
+            <p><strong>Ctrl+clic:</strong> Multiselección</p>
+            <p><strong>🔁 Revertir:</strong> Cambia sentido del flujo</p>
+        </div>
+    </div>
+
+    <div id="canvas">
+        <div id="rubberBand"></div>
+        <svg id="connections-svg">
+            <defs>
+                <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+                    <polygon points="0 0, 10 3, 0 6" fill="#475569" />
+                </marker>
+                <marker id="arrow-dashed" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+                    <polygon points="0 0, 10 3, 0 6" fill="#f59e0b" />
+                </marker>
+                <marker id="arrow-dotted" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+                    <polygon points="0 0, 10 3, 0 6" fill="#8b5cf6" />
+                </marker>
+                <marker id="arrow-rev" markerWidth="10" markerHeight="10" refX="2" refY="3" orient="auto">
+                    <polygon points="10 0, 0 3, 10 6" fill="#475569" />
+                </marker>
+            </defs>
+        </svg>
+    </div>
+
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <h2 id="modalTitle">Editar Elemento</h2>
+            <div class="form-group">
+                <label>Nombre:</label>
+                <input type="text" id="editLabel">
+            </div>
+            <div id="connLabelGroup" class="form-group" style="display:none;">
+                <label>Etiqueta del flujo:</label>
+                <input type="text" id="editConnLabel">
+            </div>
+            <div id="compDescGroup" class="form-group" style="display:none;">
+                <label>Descripción / Tecnología:</label>
+                <textarea id="editCompDesc" placeholder="Ej: Node.js, PostgreSQL, React..."></textarea>
+            </div>
+            <div id="compTypeGroup" class="form-group" style="display:none;">
+                <label>Tipo:</label>
+                <select id="editCompType">
+                    <option value="">Componente</option>
+                    <option value="service">Servicio</option>
+                    <option value="database">Base de Datos</option>
+                    <option value="frontend">Frontend</option>
+                    <option value="queue">Cola / Queue</option>
+                </select>
+            </div>
+            <div class="modal-btns">
+                <button class="btn btn-secondary" onclick="app.closeModal()">Cancelar</button>
+                <button class="btn btn-primary" onclick="app.saveEdit()">Guardar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="saveModal" class="modal">
+        <div class="modal-content">
+            <h2>Guardar Diagrama</h2>
+            <div class="form-group">
+                <label>Nombre del archivo:</label>
+                <input type="text" id="saveFileName" value="diagrama-componentes.json">
+            </div>
+            <div style="font-size:13px;color:#64748b;margin-bottom:12px;">
+                Se abrirá el selector de archivos para elegir la ubicación.
+            </div>
+            <div class="modal-btns">
+                <button class="btn btn-secondary" onclick="app.closeSaveModal()">Cancelar</button>
+                <button class="btn btn-primary" onclick="app.confirmSave()">Guardar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="connEditModal" class="modal">
+        <div class="modal-content">
+            <h2>Editar Flujo</h2>
+            <div class="form-group">
+                <label>Nombre del flujo:</label>
+                <input type="text" id="editConnLabel2">
+            </div>
+            <div class="form-group">
+                <label>Tipo de línea:</label>
+                <select id="editConnStyle">
+                    <option value="solid">Sólida (→)</option>
+                    <option value="dashed">Discontinua (⇢)</option>
+                    <option value="dotted">Punteada (⇢)</option>
+                </select>
+            </div>
+            <div class="modal-btns">
+                <button class="btn btn-secondary" onclick="app.closeConnModal()">Cancelar</button>
+                <button class="btn btn-warning" onclick="app.reverseConn()">🔁 Revertir dirección</button>
+                <button class="btn btn-primary" onclick="app.saveConnEdit()">Guardar</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/State.js"></script>
+    <script src="js/Renderer.js"></script>
+    <script src="js/Zoom.js"></script>
+    <script src="js/Guides.js"></script>
+    <script src="js/Layout.js"></script>
+    <script src="js/Modals.js"></script>
+    <script src="js/FileIO.js"></script>
+    <script src="js/ZOrder.js"></script>
+    <script src="js/Export.js"></script>
+    <script src="js/Events.js"></script>
+    <script src="js/App.js"></script>
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            if(!window.app) window.app = new App();
+        });
+    </script>
+</body>
+</html>
