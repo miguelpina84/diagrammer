@@ -156,6 +156,9 @@
         <button onclick="deleteSelected()" style="background:#ef4444;">🗑️ Eliminar</button>
         <button onclick="reverseConn()" style="background:#8b5cf6;">🔁 Revertir Flujo</button>
         <div class="sep"></div>
+        <button onclick="bringToFront()" style="background:#1e293b;border:1px solid #475569;">⬆ Al Frente</button>
+        <button onclick="sendToBack()" style="background:#1e293b;border:1px solid #475569;">⬇ Al Fondo</button>
+        <div class="sep"></div>
         <button onclick="autoLayout()" style="background:#10b981;">⊞ Auto Layout</button>
         <input id="zoomDisplay" type="text" value="100%" style="color:white;font-size:13px;font-weight:600;width:52px;text-align:center;background:#475569;border:none;border-radius:4px;padding:4px;" onchange="applyZoomInput(this)" onkeydown="if(event.key==='Enter') this.blur()" ondblclick="resetZoom()">
         <div class="sep"></div>
@@ -310,6 +313,7 @@
         let resizeStartW = 0, resizeStartH = 0;
         let resizeStartElX = 0, resizeStartElY = 0;
         let viewScale = 1.0;
+        let zCounter = 100;
         const GRID = 20;
         function snap(v) { return Math.round(v / GRID) * GRID; }
         let connectingFromId = null;
@@ -471,6 +475,22 @@
             }
             updateConns();
             renderAllConnLabels();
+        }
+
+        /* --- Z-Order --- */
+
+        function bringToFront() {
+            const sel = [...selectedIds].filter(id => !id.startsWith('conn-'));
+            if(sel.length === 0) return alert('Selecciona un componente primero');
+            sel.forEach(id => { const d = document.getElementById(id); if(d) d.style.zIndex = ++zCounter; });
+            autoSave();
+        }
+
+        function sendToBack() {
+            const sel = [...selectedIds].filter(id => !id.startsWith('conn-'));
+            if(sel.length === 0) return alert('Selecciona un componente primero');
+            sel.forEach(id => { const d = document.getElementById(id); if(d) d.style.zIndex = --zCounter; });
+            autoSave();
         }
 
         /* --- Auto Layout --- */
