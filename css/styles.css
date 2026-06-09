@@ -45,7 +45,7 @@ body { font-family: 'Segoe UI', sans-serif; overflow: hidden; background: #f0f2f
 .connection-line.hover { stroke: #3b82f6; stroke-width: 3; }
 .connection-line.dashed { stroke-dasharray: 6,4; stroke: #f59e0b; }
 .connection-line.dotted { stroke-dasharray: 2,3; stroke: #8b5cf6; }
-.connection-line.selected { stroke: #ef4444; stroke-width: 3; }
+.conn-group.selected .connection-line { stroke: #ef4444; stroke-width: 3; }
 .connection-line.bidi { marker-end: url(#arrow); }
 
 .conn-label {

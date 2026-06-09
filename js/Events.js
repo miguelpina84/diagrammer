@@ -194,7 +194,7 @@ class Events {
             if(s.selectedIds.has(id)) { s.selectedIds.delete(id); document.getElementById(id)?.classList.remove('selected'); }
             else { s.selectedIds.add(id); document.getElementById(id)?.classList.add('selected'); }
         } else {
-            document.querySelectorAll('.node, .connection-line, .conn-label').forEach(e => e.classList.remove('selected'));
+            document.querySelectorAll('.node, .conn-group, .conn-label').forEach(e => e.classList.remove('selected'));
             s.selectedIds.clear();
             s.selectedIds.add(id);
             document.getElementById(id)?.classList.add('selected');
@@ -215,7 +215,7 @@ class Events {
                 const lbl = r.connLabels.get(id); if(lbl) lbl.classList.add('selected');
             }
         } else {
-            document.querySelectorAll('.node, .connection-line, .conn-label').forEach(e => e.classList.remove('selected'));
+            document.querySelectorAll('.node, .conn-group, .conn-label').forEach(e => e.classList.remove('selected'));
             s.selectedIds.clear();
             s.selectedIds.add(id);
             document.getElementById(id)?.classList.add('selected');
