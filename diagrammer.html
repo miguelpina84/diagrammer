@@ -1120,7 +1120,7 @@
                 const fe = elements.find(e => conn.from.startsWith(e.id)), te = elements.find(e => conn.to.startsWith(e.id));
                 if(!fe || !te) return;
                 const fp = conn.from.split(':')[1], tp = conn.to.split(':')[1];
-                const pp = (el, p) => ({ top:[el.x+el.width/2,el.y], bottom:[el.x+el.width/2,el.y+el.height], left:[el.x,el.y+el.height/2], right:[el.x+el.width,el.y+el.height/2] }[p]||[el.x+el.width/2,el.y+el.height/2]));
+                const pp = (el, p) => ({ top:[el.x+el.width/2,el.y], bottom:[el.x+el.width/2,el.y+el.height], left:[el.x,el.y+el.height/2], right:[el.x+el.width,el.y+el.height/2] }[p]||[el.x+el.width/2,el.y+el.height/2]);
                 const p1 = pp(fe,fp), p2 = pp(te,tp);
                 const dx = Math.min(Math.abs(p2[0]-p1[0])*0.5,150), dy = Math.min(Math.abs(p2[1]-p1[1])*0.5,150);
                 const dir = {top:-1,bottom:1,left:-1,right:1}, o1=dir[fp]||1, o2=dir[tp]||1;
