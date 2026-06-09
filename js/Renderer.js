@@ -72,7 +72,7 @@ class Renderer {
             hit.classList.add('conn-hit');
             hit.setAttribute('fill', 'none');
             hit.setAttribute('stroke', 'transparent');
-            hit.setAttribute('stroke-width', '14');
+            hit.setAttribute('stroke-width', '28');
             hit.setAttribute('pointer-events', 'stroke');
             hit.addEventListener('click', (e) => {
                 e.stopPropagation();
@@ -85,6 +85,22 @@ class Renderer {
             hit.addEventListener('mouseenter', () => vis.classList.add('hover'));
             hit.addEventListener('mouseleave', () => vis.classList.remove('hover'));
 
+            const arrowHit = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            arrowHit.classList.add('conn-arrow-hit');
+            arrowHit.setAttribute('r', '14');
+            arrowHit.setAttribute('fill', 'transparent');
+            arrowHit.setAttribute('pointer-events', 'fill');
+            arrowHit.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if(window.app) window.app.selectConn(conn.id, e.ctrlKey || e.metaKey);
+            });
+            arrowHit.addEventListener('dblclick', (e) => {
+                e.stopPropagation();
+                if(window.app) window.app.openConnModal(conn.id);
+            });
+            arrowHit.addEventListener('mouseenter', () => vis.classList.add('hover'));
+            arrowHit.addEventListener('mouseleave', () => vis.classList.remove('hover'));
+
             const vis = document.createElementNS('http://www.w3.org/2000/svg', 'path');
             vis.classList.add('connection-line');
             vis.setAttribute('pointer-events', 'none');
@@ -93,6 +109,7 @@ class Renderer {
             const markerMap = { solid: 'url(#arrow)', dashed: 'url(#arrow-dashed)', dotted: 'url(#arrow-dotted)' };
             vis.setAttribute('marker-end', markerMap[conn.style] || markerMap.solid);
 
+            g.appendChild(arrowHit);
             g.appendChild(hit);
             g.appendChild(vis);
             this.svg.appendChild(g);
@@ -118,6 +135,8 @@ class Renderer {
         const d = `M ${p1.x} ${p1.y} C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${p2.x} ${p2.y}`;
         g.querySelector('.conn-hit').setAttribute('d', d);
         g.querySelector('.connection-line').setAttribute('d', d);
+        g.querySelector('.conn-arrow-hit').setAttribute('cx', p2.x);
+        g.querySelector('.conn-arrow-hit').setAttribute('cy', p2.y);
     }
 
     updateConns() {
