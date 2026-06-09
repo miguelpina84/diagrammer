@@ -62,24 +62,40 @@ class Renderer {
     }
 
     renderConn(conn) {
-        let path = document.getElementById(conn.id);
-        if(!path) {
-            path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-            path.id = conn.id;
-            path.classList.add('connection-line');
-            if(conn.style === 'dashed') path.classList.add('dashed');
-            if(conn.style === 'dotted') path.classList.add('dotted');
-            const markerMap = { solid: 'url(#arrow)', dashed: 'url(#arrow-dashed)', dotted: 'url(#arrow-dotted)' };
-            path.setAttribute('marker-end', markerMap[conn.style] || markerMap.solid);
-            path.addEventListener('click', (e) => {
+        let g = document.getElementById(conn.id);
+        if(!g) {
+            g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            g.id = conn.id;
+            g.classList.add('conn-group');
+
+            const hit = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            hit.classList.add('conn-hit');
+            hit.setAttribute('fill', 'none');
+            hit.setAttribute('stroke', 'transparent');
+            hit.setAttribute('stroke-width', '14');
+            hit.setAttribute('pointer-events', 'stroke');
+            hit.addEventListener('click', (e) => {
                 e.stopPropagation();
                 if(window.app) window.app.selectConn(conn.id, e.ctrlKey || e.metaKey);
             });
-            path.addEventListener('dblclick', (e) => {
+            hit.addEventListener('dblclick', (e) => {
                 e.stopPropagation();
                 if(window.app) window.app.openConnModal(conn.id);
             });
-            this.svg.appendChild(path);
+            hit.addEventListener('mouseenter', () => vis.classList.add('hover'));
+            hit.addEventListener('mouseleave', () => vis.classList.remove('hover'));
+
+            const vis = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            vis.classList.add('connection-line');
+            vis.setAttribute('pointer-events', 'none');
+            if(conn.style === 'dashed') vis.classList.add('dashed');
+            if(conn.style === 'dotted') vis.classList.add('dotted');
+            const markerMap = { solid: 'url(#arrow)', dashed: 'url(#arrow-dashed)', dotted: 'url(#arrow-dotted)' };
+            vis.setAttribute('marker-end', markerMap[conn.style] || markerMap.solid);
+
+            g.appendChild(hit);
+            g.appendChild(vis);
+            this.svg.appendChild(g);
         }
         const fromEl = document.getElementById(conn.from.split(':')[0]);
         const toEl = document.getElementById(conn.to.split(':')[0]);
@@ -99,7 +115,9 @@ class Renderer {
         const cp1y = isHorizFrom ? p1.y : p1.y + dy * o1;
         const cp2x = isHorizTo ? p2.x + dx * o2 : p2.x;
         const cp2y = isHorizTo ? p2.y : p2.y + dy * o2;
-        path.setAttribute('d', `M ${p1.x} ${p1.y} C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${p2.x} ${p2.y}`);
+        const d = `M ${p1.x} ${p1.y} C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${p2.x} ${p2.y}`;
+        g.querySelector('.conn-hit').setAttribute('d', d);
+        g.querySelector('.connection-line').setAttribute('d', d);
     }
 
     updateConns() {
@@ -142,7 +160,7 @@ class Renderer {
     }
 
     clearCanvas() {
-        document.querySelectorAll('.node, .connection-line, .conn-label').forEach(el => el.remove());
+        document.querySelectorAll('.node, .conn-group, .conn-label').forEach(el => el.remove());
         this.connLabels.clear();
     }
 }
