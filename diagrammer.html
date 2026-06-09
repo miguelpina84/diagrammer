@@ -310,6 +310,8 @@
         let resizeStartW = 0, resizeStartH = 0;
         let resizeStartElX = 0, resizeStartElY = 0;
         let viewScale = 1.0;
+        const GRID = 20;
+        function snap(v) { return Math.round(v / GRID) * GRID; }
         let connectingFromId = null;
         let connectingFromPos = null;
         let tempLine = null;
@@ -450,10 +452,10 @@
             let x = resizeStartElX, y = resizeStartElY;
             let w = resizeStartW, h = resizeStartH;
 
-            if(resizeHandle === 'se') { w = Math.max(minW, w + dx); h = Math.max(minH, h + dy); }
-            else if(resizeHandle === 'sw') { w = Math.max(minW, w - dx); x += dx; h = Math.max(minH, h + dy); }
-            else if(resizeHandle === 'ne') { w = Math.max(minW, w + dx); h = Math.max(minH, h - dy); y += dy; }
-            else if(resizeHandle === 'nw') { w = Math.max(minW, w - dx); x += dx; h = Math.max(minH, h - dy); y += dy; }
+            if(resizeHandle === 'se') { const r = snap(x + w + dx), b = snap(y + h + dy); w = Math.max(minW, r - x); h = Math.max(minH, b - y); }
+            else if(resizeHandle === 'sw') { const nx = snap(x + dx), b = snap(y + h + dy); x = nx; w = Math.max(minW, resizeStartElX + resizeStartW - nx); h = Math.max(minH, b - y); }
+            else if(resizeHandle === 'ne') { const r = snap(x + w + dx), ny = snap(y + dy); w = Math.max(minW, r - x); y = ny; h = Math.max(minH, resizeStartElY + resizeStartH - ny); }
+            else if(resizeHandle === 'nw') { const nx = snap(x + dx), ny = snap(y + dy); x = nx; y = ny; w = Math.max(minW, resizeStartElX + resizeStartW - nx); h = Math.max(minH, resizeStartElY + resizeStartH - ny); }
 
             resizeTarget.x = x;
             resizeTarget.y = y;
@@ -802,7 +804,8 @@
                 const cr = canvas.getBoundingClientRect();
                 const rawX = (e.clientX - cr.left) / viewScale - dragOffsetX;
                 const rawY = (e.clientY - cr.top) / viewScale - dragOffsetY;
-                const snapped = updateDragGuides(rawX, rawY);
+                const gx = snap(rawX), gy = snap(rawY);
+                const snapped = updateDragGuides(gx, gy);
                 const fx = snapped ? snapped.x : rawX;
                 const fy = snapped ? snapped.y : rawY;
                 if(dragStartPositions.length > 0) {
